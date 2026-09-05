@@ -4,18 +4,20 @@ A tiny, dependency-free Markdown songbook built for phones, rehearsals, and gigs
 
 ## What it does
 
-- Automatically discovers every `.md` file inside `content/`.
-- Groups songs by folder.
-- Mobile-friendly song navigation and search.
-- Previous / next song controls.
+- Automatically discovers Markdown songs in `content/original/` and `content/francais/`.
+- Pairs original and French files by filename so each song appears **once** in the menu.
+- Switches the currently displayed song between **ORIGINAL** and **FR** with one toggle.
+- Collapsible song menu on desktop and a slide-out drawer on mobile.
+- Song search plus previous / next controls.
 - Adjustable lyrics size, remembered on the device.
+- Remembers the selected language and desktop menu state.
 - Optional screen wake lock for stage use.
 - Caches the songbook after the first visit so it can keep working if the connection drops.
 - Deploys automatically to GitHub Pages on every push to `main`.
 
 ## Add a song
 
-Just add a Markdown file anywhere under `content/`:
+Put the original and French versions in the matching folders using the **same filename**:
 
 ```text
 content/
@@ -25,7 +27,7 @@ content/
     07-new-song.md
 ```
 
-Example song:
+Example:
 
 ```md
 # MY SONG
@@ -42,20 +44,16 @@ REFRAIN LINE
 ANOTHER LINE
 ```
 
-Commit and push. The GitHub Action rebuilds the menu automatically — there is no manifest to edit by hand.
+The numeric prefix controls menu order and is ignored when pairing the two language versions. For example, these files are treated as the same song:
 
-### Folder labels
-
-Each folder can optionally contain `_group.json`:
-
-```json
-{
-  "title": "PAROLES",
-  "order": 1
-}
+```text
+content/original/07-new-song.md
+content/francais/07-new-song.md
 ```
 
-If you omit it, the folder name is used as the section title.
+A song may exist in only one folder; in that case the language toggle is disabled for that song.
+
+Commit and push. The GitHub Action rebuilds the menu automatically — there is no manifest to edit by hand.
 
 ## Preview locally
 

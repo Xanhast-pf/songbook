@@ -7,6 +7,11 @@ const contentDir = path.join(root, 'content');
 const siteDir = path.join(root, 'site');
 const distDir = path.join(root, 'dist');
 
+const LANGUAGE_FOLDERS = [
+  { id: 'original', folder: 'original', label: 'ORIGINAL' },
+  { id: 'francais', folder: 'francais', label: 'FR' },
+];
+
 const slug = (value) => value
   .normalize('NFD')
   .replace(/[\u0300-\u036f]/g, '')
@@ -25,28 +30,21 @@ const extractArtist = (markdown) => {
 };
 
 const stripNumericPrefix = (filename) => filename.replace(/^\d+[._-]?/, '').replace(/\.md$/i, '');
-const prettyFolder = (name) => name.replace(/[-_]+/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+const songKey = (filename) => slug(stripNumericPrefix(path.basename(filename)));
 
 async function collectMarkdownFiles(dir, relative = '') {
   const entries = await readdir(dir, { withFileTypes: true });
   const files = [];
+
   for (const entry of entries) {
     if (entry.name.startsWith('.')) continue;
     const rel = path.posix.join(relative, entry.name);
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) files.push(...await collectMarkdownFiles(full, rel));
-    if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) files.push(rel);
+    if (entry.isFile() && entry.name.toLowerCase().endsWith('.md') && !entry.name.startsWith('_')) files.push(rel);
   }
-  return files;
-}
 
-async function groupMeta(directoryRelative) {
-  const file = path.join(contentDir, directoryRelative, '_group.json');
-  try {
-    return JSON.parse(await readFile(file, 'utf8'));
-  } catch {
-    return {};
-  }
+  return files;
 }
 
 await rm(distDir, { recursive: true, force: true });
@@ -55,39 +53,55 @@ await cp(siteDir, distDir, { recursive: true });
 await cp(contentDir, path.join(distDir, 'content'), { recursive: true });
 await writeFile(path.join(distDir, '.nojekyll'), '');
 
-const markdownFiles = (await collectMarkdownFiles(contentDir)).filter((file) => !path.basename(file).startsWith('_'));
-const grouped = new Map();
+const songsByKey = new Map();
 
-for (const relativePath of markdownFiles.sort()) {
-  const directory = path.posix.dirname(relativePath) === '.' ? 'songs' : path.posix.dirname(relativePath);
-  const markdown = await readFile(path.join(contentDir, relativePath), 'utf8');
-  const fallback = stripNumericPrefix(path.basename(relativePath)).replace(/[-_]+/g, ' ').toUpperCase();
-  const title = extractTitle(markdown, fallback);
-  const artist = extractArtist(markdown);
-  const id = slug(relativePath.replace(/\.md$/i, ''));
-  const song = {
-    id,
-    title,
-    artist,
-    path: `./content/${relativePath.split(path.sep).map(encodeURIComponent).join('/')}`,
-  };
-  if (!grouped.has(directory)) grouped.set(directory, []);
-  grouped.get(directory).push(song);
+for (const language of LANGUAGE_FOLDERS) {
+  const languageDir = path.join(contentDir, language.folder);
+  let files = [];
+
+  try {
+    files = await collectMarkdownFiles(languageDir);
+  } catch {
+    continue;
+  }
+
+  for (const relativeWithinLanguage of files.sort()) {
+    const relativePath = path.posix.join(language.folder, relativeWithinLanguage);
+    const markdown = await readFile(path.join(languageDir, relativeWithinLanguage), 'utf8');
+    const fallback = stripNumericPrefix(path.basename(relativeWithinLanguage)).replace(/[-_]+/g, ' ').toUpperCase();
+    const key = songKey(relativeWithinLanguage);
+    const current = songsByKey.get(key) || {
+      id: key,
+      order: Number.parseInt(path.basename(relativeWithinLanguage).match(/^(\d+)/)?.[1] || '999', 10),
+      title: null,
+      artist: null,
+      versions: {},
+    };
+
+    const title = extractTitle(markdown, fallback);
+    const artist = extractArtist(markdown);
+
+    if (language.id === 'original' || !current.title) current.title = title;
+    if ((language.id === 'original' && artist) || !current.artist) current.artist = artist;
+
+    current.versions[language.id] = {
+      path: `./content/${relativePath.split('/').map(encodeURIComponent).join('/')}`,
+    };
+
+    songsByKey.set(key, current);
+  }
 }
 
-const groups = [];
-for (const [directory, songs] of grouped) {
-  const meta = await groupMeta(directory);
-  groups.push({
-    id: slug(directory),
-    title: meta.title || prettyFolder(path.basename(directory)),
-    order: Number.isFinite(meta.order) ? meta.order : 999,
-    songs,
-  });
-}
+const songs = [...songsByKey.values()]
+  .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
+  .map(({ order, ...song }) => song);
 
-groups.sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
-const manifest = { generatedAt: new Date().toISOString(), groups: groups.map(({ order, ...group }) => group) };
+const manifest = {
+  generatedAt: new Date().toISOString(),
+  languages: LANGUAGE_FOLDERS.map(({ id, label }) => ({ id, label })),
+  songs,
+};
+
 await writeFile(path.join(distDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
 
 const precache = [
@@ -96,10 +110,11 @@ const precache = [
   './styles.css',
   './app.js',
   './manifest.json',
-  ...manifest.groups.flatMap((group) => group.songs.map((song) => song.path)),
+  ...songs.flatMap((song) => Object.values(song.versions).map((version) => version.path)),
 ];
+
 const cacheName = `gig-songbook-${Date.now()}`;
 const serviceWorker = `const CACHE = ${JSON.stringify(cacheName)};\nconst FILES = ${JSON.stringify(precache, null, 2)};\nself.addEventListener('install', (event) => { event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(FILES)).then(() => self.skipWaiting())); });\nself.addEventListener('activate', (event) => { event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))).then(() => self.clients.claim())); });\nself.addEventListener('fetch', (event) => { if (event.request.method !== 'GET') return; event.respondWith(fetch(event.request).then((response) => { const copy = response.clone(); caches.open(CACHE).then((cache) => cache.put(event.request, copy)); return response; }).catch(() => caches.match(event.request).then((cached) => cached || caches.match('./index.html')))); });\n`;
 await writeFile(path.join(distDir, 'sw.js'), serviceWorker, 'utf8');
 
-console.log(`Built ${manifest.groups.reduce((sum, group) => sum + group.songs.length, 0)} songs in ${manifest.groups.length} groups → dist/`);
+console.log(`Built ${songs.length} songs with ${LANGUAGE_FOLDERS.length} language slots → dist/`);
