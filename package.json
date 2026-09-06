@@ -1,11 +1,12 @@
 {
   "name": "polynesian-gig-songbook",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "preview": "npm run build && node scripts/serve.mjs"
+    "preview": "npm run build && node scripts/serve.mjs",
+    "test": "node --test test/*.test.mjs"
   },
   "engines": {
     "node": ">=22"

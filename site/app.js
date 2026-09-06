@@ -1,8 +1,19 @@
+import {
+  hasChordNotation,
+  parseChordLine,
+  stripChordNotation,
+  transposeChord,
+} from './chords.js';
+
 const state = {
   manifest: null,
   songs: [],
   currentIndex: -1,
   language: 'original',
+  currentMarkdown: '',
+  hasChords: false,
+  chordsVisible: true,
+  transpose: 0,
   wakeLock: null,
 };
 
@@ -18,6 +29,12 @@ const elements = {
   languageToggle: document.querySelector('#languageToggle'),
   originalLabel: document.querySelector('#originalLabel'),
   frenchLabel: document.querySelector('#frenchLabel'),
+  chordToolbar: document.querySelector('#chordToolbar'),
+  chordsToggle: document.querySelector('#chordsToggle'),
+  transposeDown: document.querySelector('#transposeDown'),
+  transposeReset: document.querySelector('#transposeReset'),
+  transposeValue: document.querySelector('#transposeValue'),
+  transposeUp: document.querySelector('#transposeUp'),
   fontDown: document.querySelector('#fontDown'),
   fontUp: document.querySelector('#fontUp'),
   wakeLock: document.querySelector('#wakeLock'),
@@ -77,14 +94,76 @@ function inlineMarkdown(value) {
   return safe;
 }
 
-function renderMarkdown(markdown) {
+function renderChordedLine(value, transpose) {
+  const parsed = parseChordLine(value);
+  if (!parsed.hasChords) return inlineMarkdown(value);
+
+  const html = [];
+  const tokens = [...parsed.tokens];
+
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (token.type === 'text') {
+      html.push(inlineMarkdown(token.value));
+      continue;
+    }
+
+    const originalChord = token.value;
+    const displayChord = transposeChord(originalChord, transpose);
+    const next = tokens[index + 1];
+    let leading = '';
+    let lyricAnchor = '';
+    let remainder = '';
+
+    if (next?.type === 'text') {
+      const match = /^(\s*)(\S+)?([\s\S]*)$/.exec(next.value);
+      leading = match?.[1] ?? '';
+      lyricAnchor = match?.[2] ?? '';
+      remainder = match?.[3] ?? '';
+      index += 1;
+    }
+
+    if (leading) html.push(inlineMarkdown(leading));
+
+    const title = transpose
+      ? ` title="${escapeHtml(`Original chord: ${originalChord}`)}"`
+      : '';
+    html.push(
+      `<span class="chord-anchor"><span class="chord"${title}>${escapeHtml(displayChord)}</span>`
+      + `<span class="chord-anchor__lyric">${lyricAnchor ? inlineMarkdown(lyricAnchor) : '&nbsp;'}</span></span>`,
+    );
+
+    if (remainder) html.push(inlineMarkdown(remainder));
+  }
+
+  return html.join('');
+}
+
+function renderLyricLine(value, { showChords, transpose }) {
+  const parsed = parseChordLine(value);
+  if (!parsed.hasChords) return { html: inlineMarkdown(value), hasChords: false };
+
+  if (!showChords) {
+    return { html: inlineMarkdown(stripChordNotation(value)), hasChords: false };
+  }
+
+  return { html: renderChordedLine(value, transpose), hasChords: true };
+}
+
+function renderMarkdown(markdown, { showChords = true, transpose = 0 } = {}) {
   const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
   const html = [];
   let stanza = [];
 
   const flushStanza = () => {
     if (!stanza.length) return;
-    html.push(`<p class="stanza">${stanza.map(inlineMarkdown).join('<br>')}</p>`);
+    const renderedLines = stanza.map((line) => renderLyricLine(line, { showChords, transpose }));
+    const stanzaHasChords = renderedLines.some((line) => line.hasChords);
+    html.push(
+      `<div class="stanza${stanzaHasChords ? ' stanza--chords' : ''}">`
+      + renderedLines.map((line) => `<div class="song-line${line.hasChords ? ' song-line--chords' : ''}">${line.html || '&nbsp;'}</div>`).join('')
+      + '</div>',
+    );
     stanza = [];
   };
 
@@ -174,6 +253,39 @@ function updateLanguageToggle(song) {
     : 'Aucune autre version disponible');
 }
 
+function getSongTranspose(songId) {
+  const saved = Number(localStorage.getItem(`songbook-transpose:${songId}`));
+  return Number.isFinite(saved) ? clamp(Math.round(saved), -11, 11) : 0;
+}
+
+function saveSongTranspose(songId, transpose) {
+  localStorage.setItem(`songbook-transpose:${songId}`, String(transpose));
+}
+
+function updateChordControls() {
+  elements.chordToolbar.hidden = !state.hasChords;
+  if (!state.hasChords) return;
+
+  elements.chordsToggle.setAttribute('aria-pressed', String(state.chordsVisible));
+  elements.chordsToggle.setAttribute('aria-label', state.chordsVisible ? 'Hide chords' : 'Show chords');
+  elements.chordsToggle.title = state.chordsVisible ? 'Hide chords' : 'Show chords';
+
+  const transposeDisabled = !state.chordsVisible;
+  elements.transposeDown.disabled = transposeDisabled || state.transpose <= -11;
+  elements.transposeUp.disabled = transposeDisabled || state.transpose >= 11;
+  elements.transposeReset.disabled = transposeDisabled || state.transpose === 0;
+  elements.transposeValue.textContent = state.transpose > 0 ? `+${state.transpose}` : String(state.transpose).replace('-', '−');
+  elements.transposeReset.title = state.transpose === 0 ? 'Original key' : 'Reset transposition';
+}
+
+function renderCurrentSong() {
+  elements.lyrics.innerHTML = renderMarkdown(state.currentMarkdown, {
+    showChords: state.chordsVisible,
+    transpose: state.transpose,
+  });
+  updateChordControls();
+}
+
 async function openSong(index, { updateHash = true } = {}) {
   if (index < 0 || index >= state.songs.length) return;
   const song = state.songs[index];
@@ -182,12 +294,14 @@ async function openSong(index, { updateHash = true } = {}) {
 
   state.currentIndex = index;
   state.language = language;
+  state.transpose = getSongTranspose(song.id);
 
   try {
     const response = await fetch(song.versions[language].path);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const markdown = await response.text();
-    elements.lyrics.innerHTML = renderMarkdown(markdown);
+    state.currentMarkdown = await response.text();
+    state.hasChords = hasChordNotation(state.currentMarkdown);
+    renderCurrentSong();
     document.title = `${song.title} · Gig Songbook`;
     elements.pager.hidden = false;
     elements.previous.disabled = index === 0;
@@ -200,6 +314,9 @@ async function openSong(index, { updateHash = true } = {}) {
     localStorage.setItem('songbook-language', state.language);
     if (updateHash) history.replaceState(null, '', `#${encodeURIComponent(song.id)}`);
   } catch (error) {
+    state.currentMarkdown = '';
+    state.hasChords = false;
+    elements.chordToolbar.hidden = true;
     elements.lyrics.innerHTML = `<div class="error"><strong>COULDN'T LOAD THIS SONG.</strong><br>${escapeHtml(String(error.message ?? error))}</div>`;
   }
 }
@@ -215,6 +332,33 @@ function toggleLanguage() {
   if (!song?.versions?.original || !song?.versions?.francais) return;
   state.language = state.language === 'original' ? 'francais' : 'original';
   openSong(state.currentIndex, { updateHash: false });
+}
+
+function toggleChords() {
+  if (!state.hasChords) return;
+  state.chordsVisible = !state.chordsVisible;
+  localStorage.setItem('songbook-chords-visible', String(state.chordsVisible));
+  renderCurrentSong();
+}
+
+function changeTranspose(delta) {
+  if (!state.hasChords || !state.chordsVisible) return;
+  const song = state.songs[state.currentIndex];
+  if (!song) return;
+  const next = clamp(state.transpose + delta, -11, 11);
+  if (next === state.transpose) return;
+  state.transpose = next;
+  saveSongTranspose(song.id, state.transpose);
+  renderCurrentSong();
+}
+
+function resetTranspose() {
+  if (!state.hasChords || !state.chordsVisible || state.transpose === 0) return;
+  const song = state.songs[state.currentIndex];
+  if (!song) return;
+  state.transpose = 0;
+  saveSongTranspose(song.id, state.transpose);
+  renderCurrentSong();
 }
 
 function toggleMenu() {
@@ -299,6 +443,10 @@ function bindEvents() {
   elements.closeMenu.addEventListener('click', closeMenu);
   elements.backdrop.addEventListener('click', closeMenu);
   elements.languageToggle.addEventListener('click', toggleLanguage);
+  elements.chordsToggle.addEventListener('click', toggleChords);
+  elements.transposeDown.addEventListener('click', () => changeTranspose(-1));
+  elements.transposeReset.addEventListener('click', resetTranspose);
+  elements.transposeUp.addEventListener('click', () => changeTranspose(1));
   elements.previous.addEventListener('click', () => openSong(state.currentIndex - 1));
   elements.next.addEventListener('click', () => openSong(state.currentIndex + 1));
   elements.fontDown.addEventListener('click', () => {
@@ -331,6 +479,9 @@ async function init() {
 
   const savedLanguage = localStorage.getItem('songbook-language');
   if (savedLanguage === 'original' || savedLanguage === 'francais') state.language = savedLanguage;
+
+  const savedChordsVisible = localStorage.getItem('songbook-chords-visible');
+  if (savedChordsVisible === 'false') state.chordsVisible = false;
 
   if (!mobileMenu.matches && localStorage.getItem('songbook-menu-collapsed') === 'true') {
     elements.body.classList.add('menu-collapsed');

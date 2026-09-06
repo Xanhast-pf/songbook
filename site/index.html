@@ -50,11 +50,27 @@
           <button class="button button--compact" id="wakeLock" type="button" aria-pressed="false" title="Keep the screen awake">☀</button>
         </header>
 
+        <div class="chord-toolbar" id="chordToolbar" hidden>
+          <button class="button chord-toggle" id="chordsToggle" type="button" aria-pressed="true" aria-label="Hide chords">
+            <span aria-hidden="true">🎸</span>
+            <span>CHORDS</span>
+          </button>
+
+          <div class="transpose" aria-label="Transpose chords">
+            <span class="transpose__label">TRANSPOSE</span>
+            <button class="button button--compact" id="transposeDown" type="button" aria-label="Transpose down one semitone">−</button>
+            <button class="button transpose__value" id="transposeReset" type="button" aria-label="Reset transposition">
+              <span id="transposeValue">0</span>
+            </button>
+            <button class="button button--compact" id="transposeUp" type="button" aria-label="Transpose up one semitone">+</button>
+          </div>
+        </div>
+
         <article class="lyrics" id="lyrics" aria-live="polite">
           <div class="empty-state">
             <p class="eyebrow">READY WHEN YOU ARE</p>
             <h2>SELECT A SONG</h2>
-            <p>Pick a song from the menu. Switch between the original lyrics and the French adaptation at any time.</p>
+            <p>Pick a song from the menu. Switch language anytime; songs with inline chords also unlock chord visibility and transposition controls.</p>
           </div>
         </article>
 

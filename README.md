@@ -10,8 +10,12 @@ A tiny, dependency-free Markdown songbook built for phones, rehearsals, and gigs
 - Collapsible song menu on desktop and a slide-out drawer on mobile.
 - Song search plus previous / next controls.
 - Standard Markdown links and bare `http(s)` URLs are clickable and open in a new tab.
-- Adjustable lyrics size, remembered on the device.
-- Remembers the selected language and desktop menu state.
+- **ChordPro-style inline chords** such as `[G]`, `[F#m7]`, `[Bbmaj7]`, and `[D/F#]`.
+- Chords render directly **above the word or syllable where the change happens**.
+- **CHORDS ON/OFF** control appears automatically when the current Markdown file contains chords.
+- **Transpose − / reset / +** changes every supported chord by semitone without modifying the Markdown source.
+- Transposition is remembered **per song** on the device.
+- Chord visibility, language, font size, and desktop menu state are remembered.
 - Optional screen wake lock for stage use.
 - Caches the songbook after the first visit so it can keep working if the connection drops.
 - Deploys automatically to GitHub Pages on every push to `main`.
@@ -37,14 +41,47 @@ Example:
 
 [▶ WATCH ON YOUTUBE](https://www.youtube.com/watch?v=VIDEO_ID)
 
-FIRST LINE  
-SECOND LINE  
-THIRD LINE
+[G]FIRST LINE WITH A [D]CHORD CHANGE  
+[Em]SECOND LINE GOES [C]HERE
 
 ## REFRAIN
 
-REFRAIN LINE  
-ANOTHER LINE
+[G]REFRAIN LINE  
+[D]ANOTHER [G]LINE
+```
+
+The chord goes immediately before the exact word or syllable where it changes:
+
+```md
+[G]TAGI HEVA TE [D]TAI
+KI TUA KI VAHO TE [Em]HENUA IHO NEI
+[C]KI RUGA RUARAGI TE [G]AO
+[D]KUA PO KI RARO [G]NEI
+```
+
+On the page, those chord names appear above `TAGI`, `TAI`, `HENUA`, and so on. If **CHORDS** is switched off, the `[G]`, `[D]`, etc. disappear and only the lyrics remain.
+
+### Supported chord notation
+
+Common guitar / ukulele chord names work out of the box, including:
+
+```text
+[G]
+[Am]
+[F#m7]
+[Bbmaj7]
+[Dsus4]
+[Cadd9]
+[D/F#]
+[N.C.]
+```
+
+The transposer handles roots and slash-bass notes. For example, transposing `D/F#` up two semitones displays `E/G#`. The original Markdown is never changed.
+
+Normal Markdown links are not confused with chords:
+
+```md
+[▶ WATCH ON YOUTUBE](https://youtube.com/...)
 ```
 
 The numeric prefix controls menu order and is ignored when pairing the two language versions. For example, these files are treated as the same song:
@@ -54,7 +91,7 @@ content/original/07-new-song.md
 content/francais/07-new-song.md
 ```
 
-A song may exist in only one folder; in that case the language toggle is disabled for that song.
+A song may exist in only one folder; in that case the language toggle is disabled for that song. Chords can be present in either language file, though in practice you will probably place them only in the original lyrics.
 
 Commit and push. The GitHub Action rebuilds the menu automatically — there is no manifest to edit by hand.
 
@@ -70,6 +107,12 @@ Then open:
 
 ```text
 http://localhost:4173
+```
+
+Run the chord parser/transposition tests with:
+
+```bash
+npm test
 ```
 
 ## Publish on GitHub Pages
@@ -95,8 +138,11 @@ After that, adding or editing Markdown files only requires another push to `main
 │   └── serve.mjs
 ├── site/
 │   ├── app.js
+│   ├── chords.js
 │   ├── index.html
 │   └── styles.css
+├── test/
+│   └── chords.test.mjs
 └── package.json
 ```
 

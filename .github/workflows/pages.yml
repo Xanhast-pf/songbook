@@ -26,6 +26,9 @@ jobs:
         with:
           node-version: 24
 
+      - name: Test chord parser and transposition
+        run: npm test
+
       - name: Build songbook
         run: npm run build
 

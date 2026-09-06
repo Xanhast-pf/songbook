@@ -109,6 +109,7 @@ const precache = [
   './index.html',
   './styles.css',
   './app.js',
+  './chords.js',
   './manifest.json',
   ...songs.flatMap((song) => Object.values(song.versions).map((version) => version.path)),
 ];

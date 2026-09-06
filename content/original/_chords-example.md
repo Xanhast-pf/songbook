@@ -1,0 +1,13 @@
+# CHORD EXAMPLE (IGNORED BY THE BUILD)
+
+This file starts with `_`, so it is a template only and does not appear in the song menu.
+
+```text
+[G]FIRST LYRIC LINE WITH A [D]CHORD CHANGE
+[Em]SECOND LINE GOES [C]HERE
+
+[G]A CHORD CAN START A LINE
+THE CHANGE CAN ALSO HAPPEN MID-[D]WORD
+
+[D/F#]SLASH CHORDS, [Bbmaj7]EXTENSIONS, [F#m7]MINORS AND [N.C.]NO-CHORD MARKERS WORK TOO
+```
