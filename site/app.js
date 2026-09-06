@@ -450,11 +450,11 @@ function bindEvents() {
   elements.previous.addEventListener('click', () => openSong(state.currentIndex - 1));
   elements.next.addEventListener('click', () => openSong(state.currentIndex + 1));
   elements.fontDown.addEventListener('click', () => {
-    const current = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lyrics-size')) || 1.42;
+    const current = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lyrics-size')) || 1.42;
     setLyricsSize(current - 0.12);
   });
   elements.fontUp.addEventListener('click', () => {
-    const current = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lyrics-size')) || 1.42;
+    const current = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lyrics-size')) || 1.42;
     setLyricsSize(current + 0.12);
   });
   elements.wakeLock.addEventListener('click', toggleWakeLock);

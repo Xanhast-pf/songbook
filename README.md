@@ -19,6 +19,7 @@ A tiny, dependency-free Markdown songbook built for phones, rehearsals, and gigs
 - Optional screen wake lock for stage use.
 - Caches the songbook after the first visit so it can keep working if the connection drops.
 - Deploys automatically to GitHub Pages on every push to `main`.
+- Runs the pinned **Coding Bible v0.27.0** full-project scan before every deployment; error-level findings block Pages deployment.
 
 ## Add a song
 
@@ -94,6 +95,21 @@ content/francais/07-new-song.md
 A song may exist in only one folder; in that case the language toggle is disabled for that song. Chords can be present in either language file, though in practice you will probably place them only in the original lyrics.
 
 Commit and push. The GitHub Action rebuilds the menu automatically — there is no manifest to edit by hand.
+
+## Quality gate
+
+The Pages workflow runs Coding Bible before tests/build:
+
+```yaml
+- uses: Xanhast-pf/coding-bible@v0.27.0
+  with:
+    scope: project
+    path: .
+    fail-on: error
+    sarif: false
+```
+
+The release tag is pinned deliberately so the gig site does not change analyzer behavior unexpectedly. Update the tag explicitly when you want to adopt a newer Coding Bible release.
 
 ## Preview locally
 

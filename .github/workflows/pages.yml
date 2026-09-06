@@ -21,6 +21,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Coding Bible
+        uses: Xanhast-pf/coding-bible@v0.27.0
+        with:
+          scope: project
+          path: .
+          fail-on: error
+          sarif: false
+
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
