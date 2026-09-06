@@ -8,7 +8,7 @@ A tiny, dependency-free Markdown songbook built for phones, rehearsals, and gigs
 - Pairs original and French files by filename so each song appears **once** in the menu.
 - Switches the currently displayed song between **ORIGINAL** and **FR** with one toggle.
 - Collapsible song menu on desktop and a slide-out drawer on mobile.
-- Song search plus previous / next controls.
+- Numbered song navigation with search; keyboard arrow navigation remains available on desktop.
 - Standard Markdown links and bare `http(s)` URLs are clickable and open in a new tab.
 - **ChordPro-style inline chords** such as `[G]`, `[F#m7]`, `[Bbmaj7]`, and `[D/F#]`.
 - Chords render directly **above the word or syllable where the change happens**.
@@ -20,6 +20,7 @@ A tiny, dependency-free Markdown songbook built for phones, rehearsals, and gigs
 - Caches the songbook after the first visit so it can keep working if the connection drops.
 - Deploys automatically to GitHub Pages on every push to `main`.
 - Runs the pinned **Coding Bible v0.27.0** full-project scan before every deployment; error-level findings block Pages deployment.
+- Styling follows the project's Coding Bible conventions: semantic tokens, `rem` sizing, a quarter-rem spacing scale, and `px` reserved for precision borders/accessibility helpers.
 
 ## Add a song
 
@@ -125,11 +126,13 @@ Then open:
 http://localhost:4173
 ```
 
-Run the chord parser/transposition tests with:
+Run the chord/transposition and styling-contract tests with:
 
 ```bash
 npm test
 ```
+
+The styling contract keeps `rem` values on quarter-rem increments, limits `px` to one-pixel precision work, and prevents component rules from bypassing the palette tokens.
 
 ## Publish on GitHub Pages
 

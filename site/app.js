@@ -38,10 +38,6 @@ const elements = {
   fontDown: document.querySelector('#fontDown'),
   fontUp: document.querySelector('#fontUp'),
   wakeLock: document.querySelector('#wakeLock'),
-  pager: document.querySelector('#pager'),
-  previous: document.querySelector('#previousSong'),
-  next: document.querySelector('#nextSong'),
-  pagerPosition: document.querySelector('#pagerPosition'),
 };
 
 const mobileMenu = window.matchMedia('(max-width: 860px)');
@@ -217,12 +213,17 @@ function songMatches(song, query) {
 
 function renderNavigation(query = '') {
   const currentId = state.songs[state.currentIndex]?.id;
-  const songs = state.songs.filter((song) => songMatches(song, query));
+  const songs = state.songs
+    .map((song, index) => ({ song, number: index + 1 }))
+    .filter(({ song }) => songMatches(song, query));
 
-  elements.nav.innerHTML = songs.map((song) => `
+  elements.nav.innerHTML = songs.map(({ song, number }) => `
     <button class="nav-song ${song.id === currentId ? 'is-active' : ''}" type="button" data-song-id="${escapeHtml(song.id)}">
-      ${escapeHtml(song.title)}
-      ${song.artist ? `<span class="nav-song__artist">${escapeHtml(song.artist)}</span>` : ''}
+      <span class="nav-song__number" aria-hidden="true">${String(number).padStart(2, '0')}</span>
+      <span class="nav-song__copy">
+        ${escapeHtml(song.title)}
+        ${song.artist ? `<span class="nav-song__artist">${escapeHtml(song.artist)}</span>` : ''}
+      </span>
     </button>
   `).join('') || '<p class="nav-empty">NO SONGS FOUND</p>';
 
@@ -303,10 +304,6 @@ async function openSong(index, { updateHash = true } = {}) {
     state.hasChords = hasChordNotation(state.currentMarkdown);
     renderCurrentSong();
     document.title = `${song.title} · Gig Songbook`;
-    elements.pager.hidden = false;
-    elements.previous.disabled = index === 0;
-    elements.next.disabled = index === state.songs.length - 1;
-    elements.pagerPosition.textContent = `${index + 1} / ${state.songs.length}`;
     updateLanguageToggle(song);
     renderNavigation(elements.search.value.trim());
     closeMenuAfterSelection();
@@ -407,7 +404,7 @@ function syncMenuMode() {
 }
 
 function setLyricsSize(nextSize) {
-  const size = clamp(nextSize, 0.95, 2.6);
+  const size = clamp(Math.round(nextSize * 4) / 4, 1, 2.5);
   document.documentElement.style.setProperty('--lyrics-size', `${size}rem`);
   localStorage.setItem('songbook-lyrics-size', String(size));
 }
@@ -447,15 +444,13 @@ function bindEvents() {
   elements.transposeDown.addEventListener('click', () => changeTranspose(-1));
   elements.transposeReset.addEventListener('click', resetTranspose);
   elements.transposeUp.addEventListener('click', () => changeTranspose(1));
-  elements.previous.addEventListener('click', () => openSong(state.currentIndex - 1));
-  elements.next.addEventListener('click', () => openSong(state.currentIndex + 1));
   elements.fontDown.addEventListener('click', () => {
-    const current = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lyrics-size')) || 1.42;
-    setLyricsSize(current - 0.12);
+    const current = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lyrics-size')) || 1.5;
+    setLyricsSize(current - 0.25);
   });
   elements.fontUp.addEventListener('click', () => {
-    const current = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lyrics-size')) || 1.42;
-    setLyricsSize(current + 0.12);
+    const current = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lyrics-size')) || 1.5;
+    setLyricsSize(current + 0.25);
   });
   elements.wakeLock.addEventListener('click', toggleWakeLock);
   mobileMenu.addEventListener('change', syncMenuMode);
