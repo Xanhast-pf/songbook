@@ -2,6 +2,8 @@
 
 **TEIHO TETOOFA**
 
+[▶ E RUARAGI — YOUTUBE](https://www.youtube.com/watch?v=B-CtYayHDpY)
+
 LA MER ÉLÈVE SON CHANT  
 AU-DELÀ DES RIVES, AU-DELÀ DE LA TERRE  
 LÀ-HAUT, RUARAGI VEILLE SUR LE JOUR  

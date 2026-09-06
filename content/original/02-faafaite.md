@@ -2,6 +2,8 @@
 
 **PEPENA**
 
+[▶ FA'AFAITE — YOUTUBE](https://www.youtube.com/watch?v=nmksPWmw-rs)
+
 A HI'O MAI, TAMARI'I AU NA OUTOU  
 'EITA AU E FA'ARI'I, TE AI'A TUPUNA  
 A HI'O MAI IA'U, UA FA'AOTI AU  

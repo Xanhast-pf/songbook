@@ -36,10 +36,44 @@ const escapeHtml = (value) => value
   .replaceAll('"', '&quot;')
   .replaceAll("'", '&#039;');
 
+function externalLinkHtml(label, url) {
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return escapeHtml(label);
+    return `<a href="${escapeHtml(parsed.href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+  } catch {
+    return escapeHtml(label);
+  }
+}
+
 function inlineMarkdown(value) {
-  let safe = escapeHtml(value);
+  const links = [];
+  const tokenFor = (html) => {
+    const token = `§§LINK${links.length}§§`;
+    links.push({ token, html });
+    return token;
+  };
+
+  // Standard Markdown links: [label](https://example.com)
+  let source = value.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) => (
+    tokenFor(externalLinkHtml(label, url))
+  ));
+
+  // Bare http(s) URLs are clickable too. Keep common trailing punctuation outside the link.
+  source = source.replace(/https?:\/\/[^\s<>()\[\]]+/g, (match) => {
+    const trailing = /[.,!?;:]+$/.exec(match)?.[0] ?? '';
+    const url = trailing ? match.slice(0, -trailing.length) : match;
+    return `${tokenFor(externalLinkHtml(url, url))}${trailing}`;
+  });
+
+  let safe = escapeHtml(source);
   safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   safe = safe.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  for (const { token, html } of links) {
+    safe = safe.replaceAll(token, html);
+  }
+
   return safe;
 }
 

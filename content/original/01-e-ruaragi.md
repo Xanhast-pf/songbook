@@ -2,6 +2,8 @@
 
 **TEIHO TETOOFA**
 
+[▶ E RUARAGI — YOUTUBE](https://www.youtube.com/watch?v=B-CtYayHDpY)
+
 TAGI HEVA TE TAI  
 KI TUA KI VAHO TE HENUA IHO NEI  
 KI RUGA RUARAGI TE AO  

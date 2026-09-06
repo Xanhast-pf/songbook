@@ -150,6 +150,24 @@ body.menu-collapsed .main { margin-left: 0; }
 .lyrics hr { margin: 2rem 0; border: 0; border-top: 1px solid var(--line); }
 .lyrics strong { color: var(--accent); }
 .lyrics em { color: var(--muted); }
+.lyrics a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.65rem;
+  margin: 0.2rem 0;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.82em;
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.lyrics a:hover { border-color: var(--accent); text-decoration: underline; }
+.lyrics a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
 .empty-state { max-width: 33rem; margin: 15vh auto 0; text-align: center; color: var(--muted); }
 .empty-state h2 { margin-top: 0.5rem; color: var(--text); font-size: clamp(2rem, 8vw, 4rem); letter-spacing: 0; }

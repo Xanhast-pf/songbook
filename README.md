@@ -9,6 +9,7 @@ A tiny, dependency-free Markdown songbook built for phones, rehearsals, and gigs
 - Switches the currently displayed song between **ORIGINAL** and **FR** with one toggle.
 - Collapsible song menu on desktop and a slide-out drawer on mobile.
 - Song search plus previous / next controls.
+- Standard Markdown links and bare `http(s)` URLs are clickable and open in a new tab.
 - Adjustable lyrics size, remembered on the device.
 - Remembers the selected language and desktop menu state.
 - Optional screen wake lock for stage use.
@@ -33,6 +34,8 @@ Example:
 # MY SONG
 
 **ARTIST NAME**
+
+[▶ WATCH ON YOUTUBE](https://www.youtube.com/watch?v=VIDEO_ID)
 
 FIRST LINE  
 SECOND LINE  
