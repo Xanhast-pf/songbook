@@ -15,8 +15,9 @@ A tiny, dependency-free Markdown songbook built for phones, rehearsals, and gigs
 - **CHORDS ON/OFF** control appears automatically when the current Markdown file contains chords.
 - **Transpose − / reset / +** changes every supported chord by semitone without modifying the Markdown source.
 - Transposition is remembered **per song** on the device.
-- Chord visibility, language, font size, desktop menu state, and theme are remembered.
+- Chord visibility, language, font size, column count, desktop menu state, and theme are remembered.
 - Light/dark theme toggle; **dark mode is the default** on first visit.
+- **1 / 2 / 3-column lyrics layout** for long songs; the preference is remembered and narrow phones fall back to one readable column.
 - Optional screen wake lock for stage use.
 - Caches the songbook after the first visit so it can keep working if the connection drops.
 - Deploys automatically to GitHub Pages on every push to `main`.

@@ -15,6 +15,7 @@ const state = {
   chordsVisible: true,
   transpose: 0,
   theme: 'dark',
+  columns: 1,
   wakeLock: null,
 };
 
@@ -39,6 +40,8 @@ const elements = {
   themeToggle: document.querySelector('#themeToggle'),
   themeIcon: document.querySelector('#themeIcon'),
   themeLabel: document.querySelector('#themeLabel'),
+  columnsToggle: document.querySelector('#columnsToggle'),
+  columnsValue: document.querySelector('#columnsValue'),
   fontDown: document.querySelector('#fontDown'),
   fontUp: document.querySelector('#fontUp'),
   wakeLock: document.querySelector('#wakeLock'),
@@ -429,6 +432,25 @@ function toggleTheme() {
   applyTheme(state.theme === 'dark' ? 'light' : 'dark');
 }
 
+function applyColumns(columns, { persist = true } = {}) {
+  const nextColumns = clamp(Math.round(columns), 1, 3);
+  state.columns = nextColumns;
+  elements.lyrics.dataset.columns = String(nextColumns);
+  elements.columnsValue.textContent = String(nextColumns);
+
+  const next = nextColumns === 3 ? 1 : nextColumns + 1;
+  const label = `Lyrics columns: ${nextColumns}. Switch to ${next} ${next === 1 ? 'column' : 'columns'}`;
+  elements.columnsToggle.setAttribute('aria-label', label);
+  elements.columnsToggle.title = `Lyrics columns: ${nextColumns}`;
+  elements.columnsToggle.setAttribute('aria-pressed', String(nextColumns > 1));
+
+  if (persist) localStorage.setItem('songbook-columns', String(nextColumns));
+}
+
+function cycleColumns() {
+  applyColumns(state.columns === 3 ? 1 : state.columns + 1);
+}
+
 function setLyricsSize(nextSize) {
   const size = clamp(Math.round(nextSize * 4) / 4, 1, 2.5);
   document.documentElement.style.setProperty('--lyrics-size', `${size}rem`);
@@ -471,6 +493,7 @@ function bindEvents() {
   elements.transposeReset.addEventListener('click', resetTranspose);
   elements.transposeUp.addEventListener('click', () => changeTranspose(1));
   elements.themeToggle.addEventListener('click', toggleTheme);
+  elements.columnsToggle.addEventListener('click', cycleColumns);
   elements.fontDown.addEventListener('click', () => {
     const current = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lyrics-size')) || 1.5;
     setLyricsSize(current - 0.25);
@@ -501,6 +524,9 @@ async function init() {
 
   const savedSize = Number(localStorage.getItem('songbook-lyrics-size'));
   if (Number.isFinite(savedSize) && savedSize > 0) setLyricsSize(savedSize);
+
+  const savedColumns = Number(localStorage.getItem('songbook-columns'));
+  applyColumns(Number.isFinite(savedColumns) ? savedColumns : 1, { persist: false });
 
   const savedLanguage = localStorage.getItem('songbook-language');
   if (savedLanguage === 'original' || savedLanguage === 'francais') state.language = savedLanguage;

@@ -372,6 +372,23 @@ body.menu-collapsed .main {
   font-weight: 400;
 }
 
+.columns-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.columns-toggle__icon {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.columns-toggle[aria-pressed="true"] .columns-toggle__icon {
+  color: var(--accent);
+}
+
 .button[aria-pressed="true"] {
   border-color: var(--accent-strong);
   background: var(--accent-soft);
@@ -476,6 +493,36 @@ body.menu-collapsed .main {
   flex: 1;
   margin: 0 auto;
   padding: clamp(var(--space-6), 4vw, var(--space-12)) clamp(var(--space-4), 4vw, var(--space-12)) var(--space-12);
+  column-gap: var(--space-12);
+  column-rule: 1px solid var(--line);
+}
+
+.lyrics[data-columns="2"] {
+  width: min(100%, 96rem);
+  column-count: 2;
+}
+
+.lyrics[data-columns="3"] {
+  width: min(100%, 120rem);
+  column-count: 3;
+}
+
+.lyrics h1,
+.lyrics h2,
+.lyrics h3,
+.lyrics .artist,
+.lyrics .stanza,
+.lyrics blockquote,
+.lyrics .error,
+.lyrics .empty-state {
+  break-inside: avoid-column;
+}
+
+.lyrics h1,
+.lyrics h2,
+.lyrics h3,
+.lyrics .artist {
+  break-after: avoid-column;
 }
 
 .lyrics h1 {
@@ -683,6 +730,11 @@ body.menu-collapsed .main {
 }
 
 @media (max-width: 38.75rem) {
+  .lyrics[data-columns="2"],
+  .lyrics[data-columns="3"] {
+    column-count: 1;
+  }
+
   .toolbar {
     gap: var(--space-1);
   }
