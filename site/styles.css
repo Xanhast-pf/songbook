@@ -13,6 +13,19 @@
   --color-copper-400: #c79b7a;
   --color-sage-300: #9bbfb5;
   --color-rose-300: #d98b98;
+  --color-paper-50: #f7f4ef;
+  --color-paper-100: #efebe4;
+  --color-paper-200: #e2dcd2;
+  --color-paper-300: #d1c8bb;
+  --color-graphite-900: #26282d;
+  --color-graphite-600: #68665f;
+  --color-copper-700: #8b6248;
+  --color-sage-700: #55786f;
+  --color-rose-700: #a75261;
+  --color-paper-overlay: rgb(247 244 239 / 98%);
+  --color-paper-toolbar: rgb(247 244 239 / 94%);
+  --color-paper-chord-toolbar: rgb(239 235 228 / 96%);
+  --color-graphite-hover: rgb(38 40 45 / 5%);
 
   /* Semantic color tokens */
   --bg: var(--color-ink-950);
@@ -60,6 +73,28 @@
   --sidebar-width: 20rem;
 
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: var(--color-paper-50);
+  --panel: var(--color-paper-100);
+  --panel-soft: var(--color-paper-100);
+  --panel-hover: var(--color-paper-200);
+  --line: var(--color-paper-300);
+  --text: var(--color-graphite-900);
+  --muted: var(--color-graphite-600);
+  --accent: var(--color-copper-700);
+  --accent-strong: var(--color-copper-700);
+  --accent-soft: var(--color-graphite-hover);
+  --chord: var(--color-sage-700);
+  --chord-soft: var(--color-graphite-hover);
+  --danger: var(--color-rose-700);
+  --danger-soft: var(--color-graphite-hover);
+  --panel-overlay: var(--color-paper-overlay);
+  --toolbar-overlay: var(--color-paper-toolbar);
+  --chord-toolbar-overlay: var(--color-paper-chord-toolbar);
+  --hover-soft: var(--color-graphite-hover);
 }
 
 * {
@@ -330,6 +365,11 @@ body.menu-collapsed .main {
 
 .button--compact {
   min-width: var(--control-height);
+}
+
+.theme-toggle {
+  font-size: 1.25rem;
+  font-weight: 400;
 }
 
 .button[aria-pressed="true"] {

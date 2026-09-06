@@ -1,11 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#111216" />
     <meta name="description" content="A simple mobile-friendly songbook for rehearsals and gigs." />
     <title>Gig Songbook</title>
+    <script>
+      try {
+        if (localStorage.getItem('songbook-theme') === 'light') {
+          document.documentElement.dataset.theme = 'light';
+        }
+      } catch {}
+    </script>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -45,6 +52,10 @@
           </button>
 
           <div class="toolbar__spacer"></div>
+          <button class="button button--compact theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode" title="Switch to light mode">
+            <span id="themeIcon" aria-hidden="true">☾</span>
+            <span class="sr-only" id="themeLabel">Dark mode</span>
+          </button>
           <button class="button button--compact" id="fontDown" type="button" aria-label="Decrease lyrics font size">A−</button>
           <button class="button button--compact" id="fontUp" type="button" aria-label="Increase lyrics font size">A+</button>
           <button class="button button--compact" id="wakeLock" type="button" aria-pressed="false" title="Keep the screen awake">☀</button>

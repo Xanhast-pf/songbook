@@ -14,6 +14,7 @@ const state = {
   hasChords: false,
   chordsVisible: true,
   transpose: 0,
+  theme: 'dark',
   wakeLock: null,
 };
 
@@ -35,6 +36,9 @@ const elements = {
   transposeReset: document.querySelector('#transposeReset'),
   transposeValue: document.querySelector('#transposeValue'),
   transposeUp: document.querySelector('#transposeUp'),
+  themeToggle: document.querySelector('#themeToggle'),
+  themeIcon: document.querySelector('#themeIcon'),
+  themeLabel: document.querySelector('#themeLabel'),
   fontDown: document.querySelector('#fontDown'),
   fontUp: document.querySelector('#fontUp'),
   wakeLock: document.querySelector('#wakeLock'),
@@ -403,6 +407,28 @@ function syncMenuMode() {
   );
 }
 
+function applyTheme(theme, { persist = true } = {}) {
+  const nextTheme = theme === 'light' ? 'light' : 'dark';
+  state.theme = nextTheme;
+  document.documentElement.dataset.theme = nextTheme;
+
+  const isDark = nextTheme === 'dark';
+  const actionLabel = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+  elements.themeIcon.textContent = isDark ? '☾' : '☼';
+  elements.themeLabel.textContent = isDark ? 'Dark mode' : 'Light mode';
+  elements.themeToggle.setAttribute('aria-label', actionLabel);
+  elements.themeToggle.title = actionLabel;
+
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  if (themeColor) themeColor.content = getComputedStyle(document.body).backgroundColor;
+
+  if (persist) localStorage.setItem('songbook-theme', nextTheme);
+}
+
+function toggleTheme() {
+  applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+}
+
 function setLyricsSize(nextSize) {
   const size = clamp(Math.round(nextSize * 4) / 4, 1, 2.5);
   document.documentElement.style.setProperty('--lyrics-size', `${size}rem`);
@@ -444,6 +470,7 @@ function bindEvents() {
   elements.transposeDown.addEventListener('click', () => changeTranspose(-1));
   elements.transposeReset.addEventListener('click', resetTranspose);
   elements.transposeUp.addEventListener('click', () => changeTranspose(1));
+  elements.themeToggle.addEventListener('click', toggleTheme);
   elements.fontDown.addEventListener('click', () => {
     const current = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lyrics-size')) || 1.5;
     setLyricsSize(current - 0.25);
@@ -469,6 +496,9 @@ function bindEvents() {
 }
 
 async function init() {
+  const savedTheme = localStorage.getItem('songbook-theme');
+  applyTheme(savedTheme === 'light' ? 'light' : 'dark', { persist: false });
+
   const savedSize = Number(localStorage.getItem('songbook-lyrics-size'));
   if (Number.isFinite(savedSize) && savedSize > 0) setLyricsSize(savedSize);
 

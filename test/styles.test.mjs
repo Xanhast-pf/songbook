@@ -29,3 +29,16 @@ test('component rules consume palette tokens instead of hardcoded colors', () =>
 
   assert.deepEqual(hardcodedColors, []);
 });
+
+test('light theme overrides semantic colors without bypassing palette tokens', () => {
+  const lightTheme = /:root\[data-theme="light"\]\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+
+  assert.match(lightTheme, /color-scheme:\s*light/);
+  assert.match(lightTheme, /--bg:\s*var\(--color-paper-50\)/);
+  assert.match(lightTheme, /--text:\s*var\(--color-graphite-900\)/);
+  assert.equal(/#[0-9a-f]{3,8}\b|\brgba?\(/i.test(lightTheme), false);
+});
+
+test('theme selection is explicit rather than following the OS automatically', () => {
+  assert.equal(css.includes('prefers-color-scheme'), false);
+});

@@ -15,7 +15,8 @@ A tiny, dependency-free Markdown songbook built for phones, rehearsals, and gigs
 - **CHORDS ON/OFF** control appears automatically when the current Markdown file contains chords.
 - **Transpose − / reset / +** changes every supported chord by semitone without modifying the Markdown source.
 - Transposition is remembered **per song** on the device.
-- Chord visibility, language, font size, and desktop menu state are remembered.
+- Chord visibility, language, font size, desktop menu state, and theme are remembered.
+- Light/dark theme toggle; **dark mode is the default** on first visit.
 - Optional screen wake lock for stage use.
 - Caches the songbook after the first visit so it can keep working if the connection drops.
 - Deploys automatically to GitHub Pages on every push to `main`.
@@ -132,7 +133,7 @@ Run the chord/transposition and styling-contract tests with:
 npm test
 ```
 
-The styling contract keeps `rem` values on quarter-rem increments, limits `px` to one-pixel precision work, and prevents component rules from bypassing the palette tokens.
+The styling contract keeps `rem` values on quarter-rem increments, limits `px` to one-pixel precision work, and prevents component rules from bypassing the palette tokens. Both light and dark themes consume the same semantic color tokens.
 
 ## Publish on GitHub Pages
 
