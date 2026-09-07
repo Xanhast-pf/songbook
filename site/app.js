@@ -42,6 +42,7 @@ const elements = {
   themeLabel: document.querySelector('#themeLabel'),
   columnsToggle: document.querySelector('#columnsToggle'),
   columnsValue: document.querySelector('#columnsValue'),
+  refreshButton: document.querySelector('#refreshButton'),
   fontDown: document.querySelector('#fontDown'),
   fontUp: document.querySelector('#fontUp'),
   wakeLock: document.querySelector('#wakeLock'),
@@ -305,7 +306,7 @@ async function openSong(index, { updateHash = true } = {}) {
   state.transpose = getSongTranspose(song.id);
 
   try {
-    const response = await fetch(song.versions[language].path);
+    const response = await fetch(song.versions[language].path, { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     state.currentMarkdown = await response.text();
     state.hasChords = hasChordNotation(state.currentMarkdown);
@@ -482,6 +483,56 @@ async function toggleWakeLock() {
   }
 }
 
+async function refreshSongbook() {
+  if (elements.refreshButton.disabled) return;
+
+  elements.refreshButton.disabled = true;
+  elements.refreshButton.setAttribute('aria-busy', 'true');
+  elements.refreshButton.title = 'Refreshing songbook…';
+
+  try {
+    if ('caches' in window) {
+      const cacheKeys = await caches.keys();
+      await Promise.all(
+        cacheKeys
+          .filter((key) => key.startsWith('gig-songbook-'))
+          .map((key) => caches.delete(key)),
+      );
+    }
+
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.getRegistration('./');
+      if (registration) await registration.unregister();
+    }
+  } finally {
+    const url = new URL(window.location.href);
+    url.searchParams.set('_refresh', String(Date.now()));
+    window.location.replace(url.toString());
+  }
+}
+
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator) || !location.protocol.startsWith('http')) return;
+
+  const hadController = Boolean(navigator.serviceWorker.controller);
+  let reloadingForUpdate = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloadingForUpdate) return;
+    reloadingForUpdate = true;
+    window.location.reload();
+  });
+
+  try {
+    const registration = await navigator.serviceWorker.register('./sw.js', {
+      updateViaCache: 'none',
+    });
+    await registration.update();
+  } catch {
+    // Offline mode remains usable even if the update check itself fails.
+  }
+}
+
 function bindEvents() {
   elements.search.addEventListener('input', () => renderNavigation(elements.search.value.trim()));
   elements.menuToggle.addEventListener('click', toggleMenu);
@@ -494,6 +545,7 @@ function bindEvents() {
   elements.transposeUp.addEventListener('click', () => changeTranspose(1));
   elements.themeToggle.addEventListener('click', toggleTheme);
   elements.columnsToggle.addEventListener('click', cycleColumns);
+  elements.refreshButton.addEventListener('click', refreshSongbook);
   elements.fontDown.addEventListener('click', () => {
     const current = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lyrics-size')) || 1.5;
     setLyricsSize(current - 0.25);
@@ -519,6 +571,12 @@ function bindEvents() {
 }
 
 async function init() {
+  const currentUrl = new URL(window.location.href);
+  if (currentUrl.searchParams.has('_refresh')) {
+    currentUrl.searchParams.delete('_refresh');
+    history.replaceState(null, '', `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+  }
+
   const savedTheme = localStorage.getItem('songbook-theme');
   applyTheme(savedTheme === 'light' ? 'light' : 'dark', { persist: false });
 
@@ -558,9 +616,7 @@ async function init() {
     elements.lyrics.innerHTML = `<div class="error"><strong>COULDN'T LOAD THE SONGBOOK.</strong><br>${escapeHtml(String(error.message ?? error))}</div>`;
   }
 
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
+  await registerServiceWorker();
 }
 
 init();
