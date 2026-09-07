@@ -1,8 +1,8 @@
 # TE PUA NOANOA
 
-**TOA REVA**
+**TOA REVA** [▶ TE PUA NOANOA — YOUTUBE](https://www.youtube.com/watch?v=pqSjGmCOIcA)
 
-[▶ TE PUA NOANOA — YOUTUBE](https://www.youtube.com/watch?v=pqSjGmCOIcA)
+> KEY: Am
 
 E PUA NO'ANO'A I AHURA'I  
 FA'ARARIRARIHIA E TE HUPE TO'ETO'E NŌ HAUITI I TE PŌ ANU  

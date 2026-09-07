@@ -1,8 +1,8 @@
 # FA'AFAITE
 
-**PEPENA**
+**PEPENA** [▶ FA'AFAITE — YOUTUBE](https://www.youtube.com/watch?v=nmksPWmw-rs)
 
-[▶ FA'AFAITE — YOUTUBE](https://www.youtube.com/watch?v=nmksPWmw-rs)
+> KEY: Bm
 
 A HI'O MAI, TAMARI'I AU NA OUTOU  
 'EITA AU E FA'ARI'I, TE AI'A TUPUNA  

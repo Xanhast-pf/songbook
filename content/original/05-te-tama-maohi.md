@@ -1,8 +1,8 @@
 # TE TAMA MAOHI
 
-**MEVINA**
+**MEVINA** [▶ TE TAMA MAOHI — YOUTUBE](https://www.youtube.com/watch?v=twlyNEaMdtU)
 
-[▶ TE TAMA MAOHI — YOUTUBE](https://www.youtube.com/watch?v=twlyNEaMdtU)
+> KEY: G
 
 TE OTO OTO NEI, TE MANU O TE RAI  
 PEPEHE NO OE E TE TAMA, TO'U FENUA  

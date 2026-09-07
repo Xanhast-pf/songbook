@@ -1,8 +1,8 @@
 # TAMARIKI PAUMOTU
 
-**TEIHO TETOOFA**
+**TEIHO TETOOFA** [▶ TAMARIKI PAUMOTU — YOUTUBE](https://www.youtube.com/watch?v=kaHsXrOStvA)
 
-[▶ TAMARIKI PAUMOTU — YOUTUBE](https://www.youtube.com/watch?v=kaHsXrOStvA)
+> KEY: E 
 
 HIMENE NEI AU NO TOKU HAGA MAKUI  
 TEI HOROGA MAI TE ORA NOKU NEI  
